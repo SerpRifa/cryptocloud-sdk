@@ -1,20 +1,20 @@
 # @freeinet/cryptocloud-sdk
 
-Легкий TypeScript SDK и NestJS-модуль для интеграции с CryptoCloud.
+Lightweight TypeScript SDK and NestJS module for CryptoCloud integration.
 
-## Установка
+## Installation
 
-```powershell
-# если используется npm workspaces
+```bash
+# if using npm workspaces
 npm run -w @freeinet/cryptocloud-sdk build
 ```
 
-Если пакет опубликован:
-```powershell
+If the package is published:
+```bash
 npm i @freeinet/cryptocloud-sdk
 ```
 
-## Быстрый старт (SDK)
+## Quick Start (SDK)
 
 ```ts
 import { CryptocloudClient } from '@freeinet/cryptocloud-sdk';
@@ -45,7 +45,7 @@ import { CryptocloudModule } from '@freeinet/cryptocloud-sdk';
 export class AppModule {}
 ```
 
-## Webhook валидация
+## Webhook Validation
 
 ```ts
 @Post('cryptocloud/webhook')
@@ -58,11 +58,11 @@ async onWebhook(@Body() payload: any, @Headers('x-signature') sig: string) {
 }
 ```
 
-## Опции
-- apiKey — строка (обяз.)
-- apiSecret — строка (обяз.)
-- baseUrl — string, по умолчанию официальный
-- timeoutMs — number, по умолчанию 10000
+## Options
+- apiKey — string (required)
+- apiSecret — string (required)
+- baseUrl — string, defaults to official API
+- timeoutMs — number, defaults to 10000
 
-## Лицензия
+## License
 MIT
