@@ -3,13 +3,14 @@ import { CreateInvoiceRequest, CryptocloudOptions, Invoice, WebhookPayload } fro
 import { verifySignature } from './CryptocloudSignature';
 
 const DEFAULT_BASE_URL = 'https://api.cryptocloud.plus';
+const DEFAULT_TIMEOUT = 10000;
 
 export class CryptocloudClient {
   private readonly http: AxiosInstance;
   private readonly apiSecret: string;
 
   constructor(options: CryptocloudOptions) {
-    const { apiKey, apiSecret, baseUrl = DEFAULT_BASE_URL, timeoutMs = 10000 } = options;
+    const { apiKey, apiSecret, baseUrl = DEFAULT_BASE_URL, timeoutMs = DEFAULT_TIMEOUT } = options;
     this.apiSecret = apiSecret;
     this.http = axios.create({
       baseURL: baseUrl,
@@ -40,4 +41,5 @@ export class CryptocloudClient {
     return JSON.parse(json) as WebhookPayload;
   };
 }
+
 
