@@ -1,8 +1,9 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { CryptocloudOptions } from '../types/public';
 import { CRYPTOCLOUD_OPTIONS } from './CryptocloudConfig';
 import { CryptocloudService } from './CryptocloudService';
 
+@Global()
 @Module({})
 export class CryptocloudModule {
   static register(options: CryptocloudOptions): DynamicModule {
