@@ -6,7 +6,7 @@
 
 ## ✨ Features
 
-- 🔧 **Complete API**: Create, retrieve, cancel invoices, statistics, balance
+- 🔧 **Complete API**: Create, retrieve, cancel invoices, statistics, balance, static wallet
 - 🔄 **Retry Logic**: Automatic retries with exponential backoff
 - 📝 **Logging**: Built-in logging for all operations
 - 💾 **Caching**: Optional caching for improved performance
@@ -267,6 +267,29 @@ balance.balances.forEach(b => {
 });
 ```
 
+### Static Wallet Management
+
+```ts
+// Create static wallet
+const wallet = await client.createStaticWallet({
+  currency: 'USDT',
+  description: 'Wallet for receiving payments'
+});
+
+console.log('Wallet created:', {
+  id: wallet.id,
+  address: wallet.address,
+  qrCode: wallet.qrCode
+});
+
+// Get wallet information
+const walletInfo = await client.getStaticWallet(wallet.id);
+
+// List all static wallets
+const wallets = await client.listStaticWallets();
+console.log(`Found ${wallets.total} wallets`);
+```
+
 ## 🧪 Testing
 
 ```ts
@@ -335,6 +358,9 @@ const client = new CryptocloudClient(config);
 - `getInvoiceInfo(request)` - Get multiple invoices info
 - `getBalance()` - Get balance
 - `getStatistics(request)` - Get payment statistics
+- `createStaticWallet(request)` - Create static wallet
+- `getStaticWallet(walletId)` - Get static wallet
+- `listStaticWallets()` - List static wallets
 - `verifyCallback(rawBody, signature)` - Verify webhook
 - `parseWebhook(json)` - Parse webhook payload
 

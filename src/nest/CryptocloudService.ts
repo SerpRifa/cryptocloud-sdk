@@ -1,17 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CryptocloudClient } from '../client/CryptocloudClient';
-import { 
-  CreateInvoiceRequest, 
-  CryptocloudOptions, 
-  Invoice,
-  ListInvoicesRequest,
-  ListInvoicesResponse,
-  InvoiceInfoRequest,
-  InvoiceInfoResponse,
-  BalanceResponse,
-  StatisticsRequest,
-  StatisticsResponse,
-  WebhookPayload
+import {
+    BalanceResponse,
+    CreateInvoiceRequest,
+    CryptocloudOptions,
+    Invoice,
+    InvoiceInfoRequest,
+    InvoiceInfoResponse,
+    ListInvoicesRequest,
+    ListInvoicesResponse,
+    ListStaticWalletsResponse,
+    StaticWallet,
+    StaticWalletRequest,
+    StatisticsRequest,
+    StatisticsResponse,
+    WebhookPayload
 } from '../types/public';
 import { CRYPTOCLOUD_OPTIONS } from './CryptocloudConfig';
 
@@ -72,6 +75,19 @@ export class CryptocloudService {
 
   isInvoicePending = (invoice: Invoice): boolean => {
     return this.client.isInvoicePending(invoice);
+  };
+
+  // Методы для статического кошелька
+  createStaticWallet = (request: StaticWalletRequest): Promise<StaticWallet> => {
+    return this.client.createStaticWallet(request);
+  };
+
+  getStaticWallet = (walletId: string): Promise<StaticWallet> => {
+    return this.client.getStaticWallet(walletId);
+  };
+
+  listStaticWallets = (): Promise<ListStaticWalletsResponse> => {
+    return this.client.listStaticWallets();
   };
 }
 

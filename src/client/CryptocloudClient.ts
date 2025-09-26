@@ -11,8 +11,11 @@ import {
     InvoiceInfoResponse,
     ListInvoicesRequest,
     ListInvoicesResponse,
+    ListStaticWalletsResponse,
     pendingStatuses,
     RetryOptions,
+    StaticWallet,
+    StaticWalletRequest,
     StatisticsRequest,
     StatisticsResponse,
     successStatuses,
@@ -53,7 +56,7 @@ export class CryptocloudClient {
       timeout: timeoutMs,
       headers: {
         'Content-Type': 'application/json',
-        'X-API-KEY': apiKey
+        'Authorization': `Token ${apiKey}`
       }
     });
 
@@ -265,6 +268,35 @@ export class CryptocloudClient {
 
   isInvoicePending = (invoice: Invoice): boolean => {
     return pendingStatuses.includes(invoice.status as any);
+  };
+
+  // Методы для статического кошелька
+  createStaticWallet = async (request: StaticWalletRequest): Promise<StaticWallet> => {
+    this.logger?.info('Creating static wallet', { currency: request.currency });
+    
+    return this.withRetry(async () => {
+      const { data } = await this.http.post<StaticWallet>('/v2/static-wallet/create', request);
+      this.logger?.info('Static wallet created successfully', { walletId: data.id });
+      return data;
+    });
+  };
+
+  getStaticWallet = async (walletId: string): Promise<StaticWallet> => {
+    this.logger?.debug('Getting static wallet', { walletId });
+    
+    return this.withRetry(async () => {
+      const { data } = await this.http.get<StaticWallet>(`/v2/static-wallet/${walletId}`);
+      return data;
+    });
+  };
+
+  listStaticWallets = async (): Promise<ListStaticWalletsResponse> => {
+    this.logger?.debug('Listing static wallets');
+    
+    return this.withRetry(async () => {
+      const { data } = await this.http.get<ListStaticWalletsResponse>('/v2/static-wallet/list');
+      return data;
+    });
   };
 }
 

@@ -95,6 +95,27 @@ export type StatisticsResponse = {
   };
 };
 
+// Статический кошелек
+export type StaticWalletRequest = {
+  currency: string;
+  description?: string;
+};
+
+export type StaticWallet = {
+  id: string;
+  currency: string;
+  address: string;
+  qrCode: string;
+  createdAt: string;
+  description?: string;
+  [key: string]: unknown;
+};
+
+export type ListStaticWalletsResponse = {
+  wallets: StaticWallet[];
+  total: number;
+};
+
 export type WebhookPayload = {
   event: string;
   invoiceId: string;
