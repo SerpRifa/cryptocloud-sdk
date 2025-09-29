@@ -1,35 +1,35 @@
 # @freeinet/cryptocloud-sdk
 
-🚀 Полнофункциональный TypeScript SDK и NestJS модуль для интеграции с CryptoCloud.
+🚀 Full-featured TypeScript SDK and NestJS module for CryptoCloud integration.
 
-> **English version**: [README.en.md](./README.en.md)
+> **Русская версия**: [README.md](./README.md)
 
-## ✨ Возможности
+## ✨ Features
 
-- 🔧 **Полный API**: Создание, получение, отмена инвойсов, статистика, баланс, статический кошелек
-- 🔄 **Retry логика**: Автоматические повторные попытки с экспоненциальной задержкой
-- 📝 **Логирование**: Встроенное логирование всех операций
-- 💾 **Кэширование**: Опциональное кэширование для повышения производительности
-- 🎯 **Webhook обработчики**: Готовые обработчики для webhook событий
-- 🧪 **Тестирование**: Моки и утилиты для тестирования
-- 🏗️ **NestJS интеграция**: Готовый модуль для NestJS приложений
-- 📚 **TypeScript**: Полная типизация всех API
+- 🔧 **Complete API**: Create, retrieve, cancel invoices, statistics, balance, static wallet
+- 🔄 **Retry Logic**: Automatic retries with exponential backoff
+- 📝 **Logging**: Built-in logging for all operations
+- 💾 **Caching**: Optional caching for improved performance
+- 🎯 **Webhook Handlers**: Ready-to-use webhook event handlers
+- 🧪 **Testing**: Mocks and utilities for testing
+- 🏗️ **NestJS Integration**: Ready-to-use module for NestJS applications
+- 📚 **TypeScript**: Full typing for all APIs
 
-## 📦 Установка
+## 📦 Installation
 
 ```bash
-# Если используете npm workspaces
+# If using npm workspaces
 npm run -w @freeinet/cryptocloud-sdk build
 ```
 
-Если пакет опубликован:
+If the package is published:
 ```bash
 npm i @freeinet/cryptocloud-sdk
 ```
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### Базовое использование
+### Basic Usage
 
 ```ts
 import { CryptocloudClient } from '@freeinet/cryptocloud-sdk';
@@ -40,24 +40,24 @@ const client = new CryptocloudClient({
   baseUrl: 'https://api.cryptocloud.plus'
 });
 
-// Создание инвойса
+// Create invoice
 const invoice = await client.createInvoice({ 
   amount: 10, 
   currency: 'USDT',
-  description: 'Оплата услуг',
+  description: 'Service payment',
   orderId: 'order-123'
 });
 
-// Получение информации об инвойсе
+// Get invoice information
 const invoiceInfo = await client.getInvoice(invoice.id);
 
-// Проверка статуса
+// Check status
 if (client.isInvoicePaid(invoiceInfo)) {
-  console.log('Инвойс оплачен!');
+  console.log('Invoice paid!');
 }
 ```
 
-### С логированием
+### With Logging
 
 ```ts
 import { CryptocloudClient, CryptocloudLogger } from '@freeinet/cryptocloud-sdk';
@@ -77,7 +77,7 @@ const client = new CryptocloudClient({
 });
 ```
 
-### С кэшированием
+### With Caching
 
 ```ts
 import { CachedCryptocloudClient, MemoryCache } from '@freeinet/cryptocloud-sdk';
@@ -88,16 +88,16 @@ const client = new CachedCryptocloudClient({
   cache: new MemoryCache()
 });
 
-// Получение с кэшированием (5 минут)
+// Get with caching (5 minutes)
 const invoice = await client.getInvoiceWithCache('invoice-id');
 
-// Получение баланса с кэшированием (1 минута)
+// Get balance with caching (1 minute)
 const balance = await client.getBalanceWithCache();
 ```
 
-## 🏗️ NestJS интеграция
+## 🏗️ NestJS Integration
 
-### Базовый модуль
+### Basic Module
 
 ```ts
 import { Module } from '@nestjs/common';
@@ -120,7 +120,7 @@ import { CryptocloudModule } from '@freeinet/cryptocloud-sdk';
 export class AppModule {}
 ```
 
-### Использование в сервисе
+### Using in Service
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -134,7 +134,7 @@ export class PaymentService {
     const invoice = await this.cryptocloud.createInvoice({
       amount,
       currency,
-      description: 'Оплата услуг VPN',
+      description: 'VPN service payment',
       orderId: `order-${Date.now()}`
     });
 
@@ -156,9 +156,9 @@ export class PaymentService {
 }
 ```
 
-## 🔗 Webhook обработка
+## 🔗 Webhook Handling
 
-### Базовый webhook контроллер
+### Basic Webhook Controller
 
 ```ts
 import { Controller, Post, Body, Headers, HttpCode } from '@nestjs/common';
@@ -182,7 +182,7 @@ export class WebhookController {
 
     const webhookData = this.cryptocloud.parseWebhook(raw);
     
-    // Обработка события
+    // Handle event
     switch (webhookData.status) {
       case 'paid':
         await this.handlePaymentSuccess(webhookData);
@@ -200,12 +200,12 @@ export class WebhookController {
 
   private async handlePaymentSuccess(payload: WebhookPayload) {
     console.log(`Payment successful for invoice ${payload.invoiceId}`);
-    // Обновление статуса в базе данных
+    // Update order status in database
   }
 }
 ```
 
-### Расширенная обработка с обработчиками
+### Advanced Handling with Handlers
 
 ```ts
 import { BaseWebhookHandler, WebhookService, WebhookPayload } from '@freeinet/cryptocloud-sdk';
@@ -213,24 +213,24 @@ import { BaseWebhookHandler, WebhookService, WebhookPayload } from '@freeinet/cr
 class PaymentWebhookHandler extends BaseWebhookHandler {
   async onInvoicePaid(payload: WebhookPayload): Promise<void> {
     console.log(`Payment received: ${payload.amount} ${payload.currency}`);
-    // Обновление статуса заказа
-    // Отправка уведомления пользователю
+    // Update order status
+    // Send notification to user
   }
 
   async onInvoiceFailed(payload: WebhookPayload): Promise<void> {
     console.log(`Payment failed for invoice ${payload.invoiceId}`);
-    // Уведомление об ошибке
+    // Send error notification
   }
 }
 
-// Регистрация обработчика
+// Register handler
 const webhookService = new WebhookService();
 webhookService.registerHandler('invoice.paid', new PaymentWebhookHandler());
 ```
 
-## 📊 Расширенные возможности
+## 📊 Advanced Features
 
-### Получение статистики
+### Get Statistics
 
 ```ts
 const statistics = await client.getStatistics({
@@ -238,12 +238,12 @@ const statistics = await client.getStatistics({
   endDate: '2024-01-31'
 });
 
-console.log(`Всего инвойсов: ${statistics.totalInvoices}`);
-console.log(`Оплачено: ${statistics.paidInvoices}`);
-console.log(`Общая сумма: ${statistics.totalAmount}`);
+console.log(`Total invoices: ${statistics.totalInvoices}`);
+console.log(`Paid invoices: ${statistics.paidInvoices}`);
+console.log(`Total amount: ${statistics.totalAmount}`);
 ```
 
-### Работа со списком инвойсов
+### Work with Invoice Lists
 
 ```ts
 const invoices = await client.listInvoices({
@@ -255,10 +255,10 @@ const invoices = await client.listInvoices({
   limit: 50
 });
 
-console.log(`Найдено ${invoices.total} инвойсов`);
+console.log(`Found ${invoices.total} invoices`);
 ```
 
-### Получение баланса
+### Get Balance
 
 ```ts
 const balance = await client.getBalance();
@@ -267,30 +267,30 @@ balance.balances.forEach(b => {
 });
 ```
 
-### Работа со статическим кошельком
+### Static Wallet Management
 
 ```ts
-// Создание статического кошелька
+// Create static wallet
 const wallet = await client.createStaticWallet({
   currency: 'USDT',
-  description: 'Кошелек для приема платежей'
+  description: 'Wallet for receiving payments'
 });
 
-console.log('Создан кошелек:', {
+console.log('Wallet created:', {
   id: wallet.id,
   address: wallet.address,
   qrCode: wallet.qrCode
 });
 
-// Получение информации о кошельке
+// Get wallet information
 const walletInfo = await client.getStaticWallet(wallet.id);
 
-// Список всех статических кошельков
+// List all static wallets
 const wallets = await client.listStaticWallets();
-console.log(`Найдено ${wallets.total} кошельков`);
+console.log(`Found ${wallets.total} wallets`);
 ```
 
-## 🧪 Тестирование
+## 🧪 Testing
 
 ```ts
 import { MockCryptocloudClient, TestDataFactory } from '@freeinet/cryptocloud-sdk';
@@ -326,9 +326,9 @@ describe('PaymentService', () => {
 });
 ```
 
-## ⚙️ Конфигурация
+## ⚙️ Configuration
 
-### Переменные окружения
+### Environment Variables
 
 ```bash
 CC_API_KEY=your_api_key
@@ -338,7 +338,7 @@ CC_TIMEOUT_MS=10000
 CC_ENABLE_METRICS=true
 ```
 
-### Конфигурация из переменных окружения
+### Configuration from Environment Variables
 
 ```ts
 import { CryptocloudConfig } from '@freeinet/cryptocloud-sdk';
@@ -351,34 +351,34 @@ const client = new CryptocloudClient(config);
 
 ### CryptocloudClient
 
-- `createInvoice(payload)` - Создание инвойса
-- `getInvoice(invoiceId)` - Получение инвойса
-- `cancelInvoice(uuid)` - Отмена инвойса
-- `listInvoices(request)` - Список инвойсов
-- `getInvoiceInfo(request)` - Информация о нескольких инвойсах
-- `getBalance()` - Получение баланса
-- `getStatistics(request)` - Статистика платежей
-- `createStaticWallet(request)` - Создание статического кошелька
-- `getStaticWallet(walletId)` - Получение статического кошелька
-- `listStaticWallets()` - Список статических кошельков
-- `verifyCallback(rawBody, signature)` - Верификация webhook
-- `parseWebhook(json)` - Парсинг webhook payload
+- `createInvoice(payload)` - Create invoice
+- `getInvoice(invoiceId)` - Get invoice
+- `cancelInvoice(uuid)` - Cancel invoice
+- `listInvoices(request)` - List invoices
+- `getInvoiceInfo(request)` - Get multiple invoices info
+- `getBalance()` - Get balance
+- `getStatistics(request)` - Get payment statistics
+- `createStaticWallet(request)` - Create static wallet
+- `getStaticWallet(walletId)` - Get static wallet
+- `listStaticWallets()` - List static wallets
+- `verifyCallback(rawBody, signature)` - Verify webhook
+- `parseWebhook(json)` - Parse webhook payload
 
-### Утилитарные методы
+### Utility Methods
 
-- `isInvoicePaid(invoice)` - Проверка оплаты
-- `isInvoiceFailed(invoice)` - Проверка ошибки
-- `isInvoicePending(invoice)` - Проверка ожидания
+- `isInvoicePaid(invoice)` - Check if paid
+- `isInvoiceFailed(invoice)` - Check if failed
+- `isInvoicePending(invoice)` - Check if pending
 
-## 🔧 Опции конфигурации
+## 🔧 Configuration Options
 
-- `apiKey` — string (обязательно) - API ключ
-- `apiSecret` — string (обязательно) - API секрет
-- `baseUrl` — string, по умолчанию официальный API
-- `timeoutMs` — number, по умолчанию 10000
-- `logger` — CryptocloudLogger, опциональное логирование
-- `enableMetrics` — boolean, включение метрик
+- `apiKey` — string (required) - API key
+- `apiSecret` — string (required) - API secret
+- `baseUrl` — string, defaults to official API
+- `timeoutMs` — number, defaults to 10000
+- `logger` — CryptocloudLogger, optional logging
+- `enableMetrics` — boolean, enable metrics
 
-## 📄 Лицензия
+## 📄 License
 
 MIT
