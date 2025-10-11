@@ -15,7 +15,16 @@ export type CryptocloudLogger = {
 };
 
 // Статусы инвойсов
-export type InvoiceStatus = 'pending' | 'paid' | 'failed' | 'canceled' | 'expired' | 'processing';
+export type InvoiceStatus =
+  | 'pending'
+  | 'paid'
+  | 'failed'
+  | 'canceled'
+  | 'expired'
+  | 'processing'
+  // доп. статусы из V2 ответов invoice info
+  | 'created'
+  | 'overpaid';
 export type PaymentMethod = 'bitcoin' | 'ethereum' | 'usdt' | 'litecoin' | 'bitcoin_cash' | 'tron';
 
 export type CreateInvoiceRequest = {
@@ -65,9 +74,62 @@ export type InvoiceInfoRequest = {
   uuids: string[];
 };
 
-export type InvoiceInfoResponse = {
-  invoices: Invoice[];
+// Обёртка ответов API V2
+export type CryptocloudApiResponse<T> = {
+  status: 'success' | 'error';
+  result: T;
 };
+
+// Типы для ответа "Информация о счёте" (raw из API)
+export type InvoiceInfoCurrency = {
+  id: number;
+  code: string; // "USDT"
+  fullcode: string; // "USDT_TRC20"
+  network: {
+    code: string; // "TRC20"
+    id: number;
+    icon: string;
+    fullname: string; // "Tron"
+  };
+  name: string; // "Tether"
+  is_email_required: boolean;
+  stablecoin: boolean;
+  icon_base: string;
+  icon_network: string;
+  icon_qr: string;
+  order: number;
+};
+
+export type InvoiceInfoProject = {
+  id: number;
+  name: string;
+  fail: string | null;
+  success: string | null;
+  logo: string | null;
+};
+
+export type InvoiceInfoItem = {
+  uuid: string; // "INV-XXXXXXXX" или "XXXXXXXX"
+  address: string;
+  expiry_date: string; // "YYYY-MM-DD HH:mm:ss.SSSSSS"
+  side_commission: 'client' | 'merchant';
+  side_commission_cc: 'client' | 'merchant';
+  amount: number;
+  amount_usd: number;
+  received: number;
+  received_usd: number;
+  fee: number;
+  fee_usd: number;
+  service_fee: number;
+  service_fee_usd: number;
+  status: string; // в raw формате из API
+  order_id: string | null;
+  currency: InvoiceInfoCurrency;
+  project: InvoiceInfoProject;
+  test_mode: boolean;
+};
+
+export type InvoiceInfoResponse = InvoiceInfoItem[];
 
 export type BalanceResponse = {
   balances: {
@@ -128,9 +190,9 @@ export type WebhookPayload = {
   [key: string]: unknown;
 };
 
-export const successStatuses = ['paid', 'success', 'completed', 'succeeded'] as const;
+export const successStatuses = ['paid', 'success', 'completed', 'succeeded', 'overpaid'] as const;
 export const errorStatuses = ['error', 'failed', 'canceled', 'expired'] as const;
-export const pendingStatuses = ['pending', 'processing'] as const;
+export const pendingStatuses = ['pending', 'processing', 'created'] as const;
 
 // Типы для ошибок
 export class CryptocloudError extends Error {

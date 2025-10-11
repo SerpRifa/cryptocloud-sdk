@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import {
     BalanceResponse,
     CreateInvoiceRequest,
+    CryptocloudApiResponse,
     CryptocloudError,
     CryptocloudLogger,
     CryptocloudOptions,
@@ -213,8 +214,24 @@ export class CryptocloudClient {
     this.logger?.debug('Getting invoice info', { uuids: request.uuids });
     
     return this.withRetry(async () => {
-      const { data } = await this.http.post<InvoiceInfoResponse>('/v2/invoice/merchant/info', request);
-      return data;
+      if (!Array.isArray(request.uuids) || request.uuids.length === 0) {
+        throw new CryptocloudError('uuids must be a non-empty array', 'INVALID_ARGUMENT');
+      }
+      if (request.uuids.length > 100) {
+        throw new CryptocloudError('Max 100 uuids', 'MAX_UUIDS_EXCEEDED', 400);
+      }
+
+      const { data } = await this.http.post<CryptocloudApiResponse<InvoiceInfoResponse>>('/v2/invoice/merchant/info', request);
+
+      if (data?.status !== 'success') {
+        const validateError = (data as any)?.result?.validate_error;
+        const detail = (data as any)?.detail;
+        const message = validateError || detail || 'Unknown API error';
+        const code = validateError === 'Max 100 uuids' ? 'MAX_UUIDS_EXCEEDED' : 'API_ERROR';
+        throw new CryptocloudError(message, code);
+      }
+
+      return data.result;
     });
   };
 
