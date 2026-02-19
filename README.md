@@ -1,35 +1,24 @@
 # @freeinet/cryptocloud-sdk
 
-🚀 Full-featured TypeScript SDK and NestJS module for CryptoCloud integration.
+TypeScript SDK and NestJS module for working with CryptoCloud API. Handles invoices, webhooks, balance checks, and all the usual stuff you need for crypto payments.
 
-> **Русская версия**: [README.md](./README.md)
+## Installation
 
-## ✨ Features
-
-- 🔧 **Complete API**: Create, retrieve, cancel invoices, statistics, balance, static wallet
-- 🔄 **Retry Logic**: Automatic retries with exponential backoff
-- 📝 **Logging**: Built-in logging for all operations
-- 💾 **Caching**: Optional caching for improved performance
-- 🎯 **Webhook Handlers**: Ready-to-use webhook event handlers
-- 🧪 **Testing**: Mocks and utilities for testing
-- 🏗️ **NestJS Integration**: Ready-to-use module for NestJS applications
-- 📚 **TypeScript**: Full typing for all APIs
-
-## 📦 Installation
+If you're using npm workspaces in this repo:
 
 ```bash
-# If using npm workspaces
 npm run -w @freeinet/cryptocloud-sdk build
 ```
 
-If the package is published:
+Or if it's published to npm:
+
 ```bash
 npm i @freeinet/cryptocloud-sdk
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
-### Basic Usage
+Basic usage is pretty straightforward:
 
 ```ts
 import { CryptocloudClient } from '@freeinet/cryptocloud-sdk';
@@ -40,7 +29,7 @@ const client = new CryptocloudClient({
   baseUrl: 'https://api.cryptocloud.plus'
 });
 
-// Create invoice
+// Create an invoice
 const invoice = await client.createInvoice({ 
   amount: 10, 
   currency: 'USDT',
@@ -48,16 +37,17 @@ const invoice = await client.createInvoice({
   orderId: 'order-123'
 });
 
-// Get invoice information
+// Check invoice status
 const invoiceInfo = await client.getInvoice(invoice.id);
 
-// Check status
 if (client.isInvoicePaid(invoiceInfo)) {
   console.log('Invoice paid!');
 }
 ```
 
-### With Logging
+## Logging
+
+If you want to see what's happening under the hood, you can pass a logger:
 
 ```ts
 import { CryptocloudClient, CryptocloudLogger } from '@freeinet/cryptocloud-sdk';
@@ -77,7 +67,9 @@ const client = new CryptocloudClient({
 });
 ```
 
-### With Caching
+## Caching
+
+For cases where you're checking the same invoice or balance multiple times, there's a cached client that saves you some API calls:
 
 ```ts
 import { CachedCryptocloudClient, MemoryCache } from '@freeinet/cryptocloud-sdk';
@@ -88,16 +80,14 @@ const client = new CachedCryptocloudClient({
   cache: new MemoryCache()
 });
 
-// Get with caching (5 minutes)
+// These calls are cached for a few minutes
 const invoice = await client.getInvoiceWithCache('invoice-id');
-
-// Get balance with caching (1 minute)
 const balance = await client.getBalanceWithCache();
 ```
 
-## 🏗️ NestJS Integration
+## NestJS Integration
 
-### Basic Module
+If you're using NestJS, there's a module that makes things easier:
 
 ```ts
 import { Module } from '@nestjs/common';
@@ -120,7 +110,7 @@ import { CryptocloudModule } from '@freeinet/cryptocloud-sdk';
 export class AppModule {}
 ```
 
-### Using in Service
+Then inject it in your services:
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -156,12 +146,12 @@ export class PaymentService {
 }
 ```
 
-## 🔗 Webhook Handling
+## Webhooks
 
-### Basic Webhook Controller
+Handling webhooks is important for keeping your payment statuses up to date. Here's a basic controller:
 
 ```ts
-import { Controller, Post, Body, Headers, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, Headers, HttpCode, UnauthorizedException } from '@nestjs/common';
 import { CryptocloudService, WebhookPayload } from '@freeinet/cryptocloud-sdk';
 
 @Controller('webhooks')
@@ -176,13 +166,14 @@ export class WebhookController {
   ) {
     const raw = JSON.stringify(payload);
     
+    // Always verify the signature!
     if (!this.cryptocloud.verifyCallback(raw, signature)) {
       throw new UnauthorizedException('Invalid signature');
     }
 
     const webhookData = this.cryptocloud.parseWebhook(raw);
     
-    // Handle event
+    // Handle different statuses
     switch (webhookData.status) {
       case 'paid':
         await this.handlePaymentSuccess(webhookData);
@@ -200,12 +191,12 @@ export class WebhookController {
 
   private async handlePaymentSuccess(payload: WebhookPayload) {
     console.log(`Payment successful for invoice ${payload.invoiceId}`);
-    // Update order status in database
+    // Update your database, send notifications, etc.
   }
 }
 ```
 
-### Advanced Handling with Handlers
+You can also use the handler classes if you prefer a more structured approach:
 
 ```ts
 import { BaseWebhookHandler, WebhookService, WebhookPayload } from '@freeinet/cryptocloud-sdk';
@@ -213,24 +204,25 @@ import { BaseWebhookHandler, WebhookService, WebhookPayload } from '@freeinet/cr
 class PaymentWebhookHandler extends BaseWebhookHandler {
   async onInvoicePaid(payload: WebhookPayload): Promise<void> {
     console.log(`Payment received: ${payload.amount} ${payload.currency}`);
-    // Update order status
-    // Send notification to user
+    // Do your thing here
   }
 
   async onInvoiceFailed(payload: WebhookPayload): Promise<void> {
     console.log(`Payment failed for invoice ${payload.invoiceId}`);
-    // Send error notification
+    // Handle failures
   }
 }
 
-// Register handler
+// Register it
 const webhookService = new WebhookService();
 webhookService.registerHandler('invoice.paid', new PaymentWebhookHandler());
 ```
 
-## 📊 Advanced Features
+## Other Features
 
-### Get Statistics
+### Statistics
+
+Get payment stats for a date range:
 
 ```ts
 const statistics = await client.getStatistics({
@@ -243,7 +235,9 @@ console.log(`Paid invoices: ${statistics.paidInvoices}`);
 console.log(`Total amount: ${statistics.totalAmount}`);
 ```
 
-### Work with Invoice Lists
+### Listing Invoices
+
+Fetch invoices with filters:
 
 ```ts
 const invoices = await client.listInvoices({
@@ -258,7 +252,9 @@ const invoices = await client.listInvoices({
 console.log(`Found ${invoices.total} invoices`);
 ```
 
-### Get Balance
+### Balance
+
+Check your account balance:
 
 ```ts
 const balance = await client.getBalance();
@@ -267,10 +263,12 @@ balance.balances.forEach(b => {
 });
 ```
 
-### Static Wallet Management
+### Static Wallets
+
+Create and manage static wallets for receiving payments:
 
 ```ts
-// Create static wallet
+// Create a new wallet
 const wallet = await client.createStaticWallet({
   currency: 'USDT',
   description: 'Wallet for receiving payments'
@@ -282,15 +280,17 @@ console.log('Wallet created:', {
   qrCode: wallet.qrCode
 });
 
-// Get wallet information
+// Get wallet info
 const walletInfo = await client.getStaticWallet(wallet.id);
 
-// List all static wallets
+// List all wallets
 const wallets = await client.listStaticWallets();
 console.log(`Found ${wallets.total} wallets`);
 ```
 
-## 🧪 Testing
+## Testing
+
+There's a mock client for testing that doesn't hit the real API:
 
 ```ts
 import { MockCryptocloudClient, TestDataFactory } from '@freeinet/cryptocloud-sdk';
@@ -326,9 +326,9 @@ describe('PaymentService', () => {
 });
 ```
 
-## ⚙️ Configuration
+## Configuration
 
-### Environment Variables
+You can set these environment variables:
 
 ```bash
 CC_API_KEY=your_api_key
@@ -338,7 +338,7 @@ CC_TIMEOUT_MS=10000
 CC_ENABLE_METRICS=true
 ```
 
-### Configuration from Environment Variables
+Or load config from env:
 
 ```ts
 import { CryptocloudConfig } from '@freeinet/cryptocloud-sdk';
@@ -347,38 +347,38 @@ const config = CryptocloudConfig.fromEnv();
 const client = new CryptocloudClient(config);
 ```
 
-## 📋 API Reference
+## API Methods
 
 ### CryptocloudClient
 
-- `createInvoice(payload)` - Create invoice
-- `getInvoice(invoiceId)` - Get invoice
-- `cancelInvoice(uuid)` - Cancel invoice
-- `listInvoices(request)` - List invoices
-- `getInvoiceInfo(request)` - Get multiple invoices info
-- `getBalance()` - Get balance
+- `createInvoice(payload)` - Create a new invoice
+- `getInvoice(invoiceId)` - Get invoice details
+- `cancelInvoice(uuid)` - Cancel an invoice
+- `listInvoices(request)` - List invoices with filters
+- `getInvoiceInfo(request)` - Get info for multiple invoices
+- `getBalance()` - Get account balance
 - `getStatistics(request)` - Get payment statistics
-- `createStaticWallet(request)` - Create static wallet
-- `getStaticWallet(walletId)` - Get static wallet
-- `listStaticWallets()` - List static wallets
-- `verifyCallback(rawBody, signature)` - Verify webhook
+- `createStaticWallet(request)` - Create a static wallet
+- `getStaticWallet(walletId)` - Get wallet details
+- `listStaticWallets()` - List all static wallets
+- `verifyCallback(rawBody, signature)` - Verify webhook signature
 - `parseWebhook(json)` - Parse webhook payload
 
-### Utility Methods
+### Helpers
 
-- `isInvoicePaid(invoice)` - Check if paid
-- `isInvoiceFailed(invoice)` - Check if failed
-- `isInvoicePending(invoice)` - Check if pending
+- `isInvoicePaid(invoice)` - Check if invoice is paid
+- `isInvoiceFailed(invoice)` - Check if invoice failed
+- `isInvoicePending(invoice)` - Check if invoice is pending
 
-## 🔧 Configuration Options
+## Configuration Options
 
-- `apiKey` — string (required) - API key
-- `apiSecret` — string (required) - API secret
-- `baseUrl` — string, defaults to official API
-- `timeoutMs` — number, defaults to 10000
-- `logger` — CryptocloudLogger, optional logging
-- `enableMetrics` — boolean, enable metrics
+- `apiKey` (required) - Your CryptoCloud API key
+- `apiSecret` (required) - Your CryptoCloud API secret
+- `baseUrl` - API base URL, defaults to the official one
+- `timeoutMs` - Request timeout in milliseconds, defaults to 10000
+- `logger` - Optional logger instance
+- `enableMetrics` - Enable metrics collection
 
-## 📄 License
+## License
 
 MIT
