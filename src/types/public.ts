@@ -8,10 +8,10 @@ export type CryptocloudOptions = {
 };
 
 export type CryptocloudLogger = {
-  info(message: string, meta?: any): void;
+  info(message: string, meta?: Record<string, unknown>): void;
   error(message: string, error?: Error): void;
-  warn(message: string, meta?: any): void;
-  debug(message: string, meta?: any): void;
+  warn(message: string, meta?: Record<string, unknown>): void;
+  debug(message: string, meta?: Record<string, unknown>): void;
 };
 
 // Статусы инвойсов
@@ -200,7 +200,7 @@ export class CryptocloudError extends Error {
     message: string,
     public readonly code?: string,
     public readonly statusCode?: number,
-    public readonly response?: any
+    public readonly response?: unknown
   ) {
     super(message);
     this.name = 'CryptocloudError';

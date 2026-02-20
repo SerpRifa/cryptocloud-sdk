@@ -1,20 +1,10 @@
-import { Invoice } from '../types/public';
-
-/**
- * Интерфейс для кэширования
- */
-export interface CryptocloudCache {
-  get<T>(key: string): Promise<T | null>;
-  set<T>(key: string, value: T, ttl?: number): Promise<void>;
-  delete(key: string): Promise<void>;
-  clear(): Promise<void>;
-}
+import { CryptocloudCache } from '../types/public';
 
 /**
  * Простая реализация кэша в памяти
  */
 export class MemoryCache implements CryptocloudCache {
-  private cache = new Map<string, { value: any; expires: number }>();
+  private cache = new Map<string, { value: unknown; expires: number }>();
 
   async get<T>(key: string): Promise<T | null> {
     const item = this.cache.get(key);

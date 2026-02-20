@@ -103,21 +103,21 @@ export class CryptocloudClient {
 
   private handleAxiosError(error: AxiosError): CryptocloudError {
     const statusCode = error.response?.status;
-    const responseData = error.response?.data as any;
+    const responseData = error.response?.data as Record<string, unknown> | undefined;
     
     let message = 'Unknown error occurred';
     let code = 'UNKNOWN_ERROR';
 
-    if (responseData?.message) {
-      message = responseData.message;
-    } else if (responseData?.error) {
-      message = responseData.error;
+    if (responseData?.message != null) {
+      message = String(responseData.message);
+    } else if (responseData?.error != null) {
+      message = String(responseData.error);
     } else if (error.message) {
       message = error.message;
     }
 
-    if (responseData?.code) {
-      code = responseData.code;
+    if (responseData?.code != null) {
+      code = String(responseData.code);
     } else if (statusCode) {
       code = `HTTP_${statusCode}`;
     }
@@ -224,9 +224,12 @@ export class CryptocloudClient {
       const { data } = await this.http.post<CryptocloudApiResponse<InvoiceInfoResponse>>('/v2/invoice/merchant/info', request);
 
       if (data?.status !== 'success') {
-        const validateError = (data as any)?.result?.validate_error;
-        const detail = (data as any)?.detail;
-        const message = validateError || detail || 'Unknown API error';
+        const result = data?.result as unknown as Record<string, unknown> | undefined;
+        const validateError = result?.validate_error;
+        const detail = (data as unknown as Record<string, unknown>)?.detail;
+        const message = (typeof validateError === 'string' ? validateError : null)
+          ?? (typeof detail === 'string' ? detail : null)
+          ?? 'Unknown API error';
         const code = validateError === 'Max 100 uuids' ? 'MAX_UUIDS_EXCEEDED' : 'API_ERROR';
         throw new CryptocloudError(message, code);
       }
@@ -276,15 +279,15 @@ export class CryptocloudClient {
 
   // Утилитарные методы
   isInvoicePaid = (invoice: Invoice): boolean => {
-    return successStatuses.includes(invoice.status as any);
+    return (successStatuses as readonly string[]).includes(invoice.status);
   };
 
   isInvoiceFailed = (invoice: Invoice): boolean => {
-    return errorStatuses.includes(invoice.status as any);
+    return (errorStatuses as readonly string[]).includes(invoice.status);
   };
 
   isInvoicePending = (invoice: Invoice): boolean => {
-    return pendingStatuses.includes(invoice.status as any);
+    return (pendingStatuses as readonly string[]).includes(invoice.status);
   };
 
   // Методы для статического кошелька

@@ -23,7 +23,7 @@ export class CryptocloudConfig {
       apiKey,
       apiSecret,
       baseUrl: process.env.CC_BASE_URL || 'https://api.cryptocloud.plus',
-      timeoutMs: parseInt(process.env.CC_TIMEOUT_MS || '10000'),
+      timeoutMs: parseInt(process.env.CC_TIMEOUT_MS ?? '10000', 10) || 10000,
       enableMetrics: process.env.CC_ENABLE_METRICS === 'true',
     };
   }
