@@ -4,6 +4,9 @@ import {
     CreateInvoiceRequest,
     CryptocloudOptions,
     Invoice,
+    InvoiceInfoCurrency,
+    InvoiceInfoItem,
+    InvoiceInfoProject,
     InvoiceInfoRequest,
     InvoiceInfoResponse,
     ListInvoicesRequest,
@@ -12,7 +15,8 @@ import {
     StaticWallet,
     StaticWalletRequest,
     StatisticsRequest,
-    StatisticsResponse
+    StatisticsResponse,
+    WebhookPayload
 } from '../types/public';
 
 /**
@@ -85,11 +89,53 @@ export class MockCryptocloudClient extends CryptocloudClient {
   }
 
   getInvoiceInfo = async (request: InvoiceInfoRequest): Promise<InvoiceInfoResponse> => {
-    const invoices = request.uuids
+    return request.uuids
       .map(uuid => Array.from(this.invoices.values()).find(i => i.uuid === uuid))
-      .filter(Boolean) as Invoice[];
+      .filter((inv): inv is Invoice => inv != null)
+      .map(inv => this.invoiceToInfoItem(inv));
+  }
 
-    return { invoices };
+  private invoiceToInfoItem(invoice: Invoice): InvoiceInfoItem {
+    const currency: InvoiceInfoCurrency = {
+      id: 1,
+      code: invoice.currency,
+      fullcode: `${invoice.currency}_MAIN`,
+      network: { code: 'MAIN', id: 1, icon: '', fullname: invoice.currency },
+      name: invoice.currency,
+      is_email_required: false,
+      stablecoin: false,
+      icon_base: '',
+      icon_network: '',
+      icon_qr: '',
+      order: 0,
+    };
+    const project: InvoiceInfoProject = {
+      id: 1,
+      name: 'Test',
+      fail: null,
+      success: null,
+      logo: null,
+    };
+    return {
+      uuid: invoice.uuid ?? invoice.id,
+      address: 'mock-address',
+      expiry_date: invoice.updatedAt ?? invoice.createdAt,
+      side_commission: 'merchant',
+      side_commission_cc: 'merchant',
+      amount: invoice.amount,
+      amount_usd: invoice.amount,
+      received: 0,
+      received_usd: 0,
+      fee: 0,
+      fee_usd: 0,
+      service_fee: 0,
+      service_fee_usd: 0,
+      status: invoice.status,
+      order_id: invoice.orderId ?? null,
+      currency,
+      project,
+      test_mode: true,
+    };
   }
 
   getBalance = async (): Promise<BalanceResponse> => {
@@ -227,7 +273,7 @@ export class TestDataFactory {
     };
   }
 
-  static createTestWebhookPayload(overrides: Partial<any> = {}): any {
+  static createTestWebhookPayload(overrides: Partial<WebhookPayload> = {}): WebhookPayload {
     return {
       event: 'invoice.paid',
       invoiceId: 'test-invoice-1',
